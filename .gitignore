@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# 虚拟环境
+.venv/
+
+# 测试 / 覆盖率 / 缓存
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 基准测试输出
+benchmarks/results/
+
+# IDE / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
