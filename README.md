@@ -74,3 +74,30 @@ assert np.allclose(geometric_jacobian(arm, q)[:3], Jv_num, atol=1e-6)
 report = check_trajectory(t, q_traj, v_max=np.pi / 2, a_max=np.pi)
 print(report)
 ```
+
+## TOPP 逆向调度 demo
+
+项目包含从 AArch64 `libtopp_core.so` 恢复的 TOPP 流水线控制流模型，可在 Windows 上直接运行：
+
+```powershell
+uv run python examples/topp_runtime_demo.py
+uv run python examples/topp_runtime_demo.py --scenario solver-failure
+uv run python examples/topp_trajectory_plot.py
+uv run python examples/topp_cartesian_line.py
+uv run python examples/topp_cartesian_complex.py
+uv run pytest tests/trajectory/test_topp_runtime.py
+uv run pytest tests/trajectory/test_topp_cartesian.py
+```
+
+实现复现 `FeedrateOptimizer::step`、`ToppPipelineRunner::run` 和 `ToppRuntime::run` 的窗口、状态机、错误传播、取消及周期控制语义。数值部分通过 `highspy` 调用 HiGHS：阶段一优化速度平方曲线，阶段二基于阶段一参考速度加入线性化 jerk 约束并重新优化。详细证据见 [`docs/TOPP_HIGHS_TWO_STAGE_LP.md`](docs/TOPP_HIGHS_TWO_STAGE_LP.md)、[`docs/TOPP_FEEDRATE_RUNTIME_REVERSE.md`](docs/TOPP_FEEDRATE_RUNTIME_REVERSE.md) 与 [`docs/TOPP_PIPELINE_RUNNER_RUN_REVERSE.md`](docs/TOPP_PIPELINE_RUNNER_RUN_REVERSE.md)。
+
+绘图示例测试短距离 jerk 受限、长距离梯形速度、加速度受限和四段混合路径，默认输出 `docs/assets/topp_trajectory_profiles.png`；传入 `--show` 可同时打开交互窗口。
+
+笛卡尔 demo 对 UR5 TCP 直线进行连续 IK 和路径约束预计算，然后将关节/TCP 的速度、
+加速度、jerk 及可插拔动力学力矩限制统一写入两阶段 LP。它会输出三维路径、TCP、关节、
+jerk 和力矩曲线到 `docs/assets/topp_cartesian_line.png`。实现与模型接口说明见
+[`docs/TOPP_CARTESIAN_PORT.md`](docs/TOPP_CARTESIAN_PORT.md)。
+
+复杂轨迹示例使用三维双频 S 曲线并叠加工具姿态摆动，特意让 TCP 速度、关节速度、
+路径/关节加速度和阶段二 jerk 在不同区段成为活动约束。默认输出
+`docs/assets/topp_cartesian_complex.png`，图中的归一化利用率达到 `1.0` 表示约束被触及。

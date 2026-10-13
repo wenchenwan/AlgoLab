@@ -5,6 +5,7 @@ description = "机械臂运动控制算法实现、测试与测试工具集"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "highspy>=1.15.1",
     "numpy>=2.0",
 ]
 
